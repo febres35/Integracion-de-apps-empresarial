@@ -1,0 +1,8 @@
+from .server.instance import server
+from .controllers.consulta import ns_consulta as producto
+from .controllers.averia import ns_averia as averia
+
+
+api = server.api()
+api.add_namespace(producto)
+api.add_namespace(averia)

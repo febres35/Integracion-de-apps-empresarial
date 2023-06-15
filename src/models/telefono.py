@@ -4,19 +4,10 @@ from src.server.instance import server
 
 
 in_telefono = server.api.model('Telefono', {
-    'cod': fields.String(decription="Codigo de area", required=True, min_length=3, max_length=4),
+    'cod': fields.String(decription="Codigo de area", required=True, min_length=3, max_length=3),
     'tlf': fields.String(decription = ' Telefono sin el codigo de area', required=True, min_length=7, max_length=7)
     })
 
 
-child_outSaldo = server.api.model( 'data', {
-    'Fvencimiento': fields.String(), 
-    'saldoA': fields.String(), 
-    'saldoV': fields.String(), 
-    'Fcorte': fields.String()
-})
-out_Saldo = server.api.model('Saldo', {
-    'producto': fields.String(),
-    'data': fields.Nested(child_outSaldo)})
 
 

@@ -7,7 +7,10 @@ from src.server.instance import server
 app = server.app
 api = server.api
 
-from src.models.telefono import in_telefono, out_Saldo
+from src.models.telefono import in_telefono
+from src.models.saldo import  out_Saldo
+from src.models.abonado import out_abonado
+from src.models.plan import out_planes
 
 ns_consulta = Namespace('Consultas', description='Consultas -> saldo | abonado | planes', path='/api/1.0/consulta')
 #api.add_namespace(ns_consulta)
@@ -72,15 +75,22 @@ class Saldo(Resource):
 
         return AAAAMMDD
     
+
+
 @ns_consulta.route('/abonado')
 class Abonado(Resource):
 
+    @ns_consulta.expect(in_telefono, valitade=True)
+    @ns_consulta.marshal_with(out_abonado)
     def post(self, ):
         pass
 
 
 @ns_consulta.route('/planes')
 class Planes(Resource):
+
+    @ns_consulta.expect(in_telefono, valitade=True)
+    @ns_consulta.marshal_with(out_planes)
     def post(self, ):
         pass
 

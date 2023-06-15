@@ -3,3 +3,5 @@ src/models/__pycache__/telefono.cpython-38.pyc
 src/controllers/__pycache__/telefonos.cpython-38.pyc
 src/controllers/__pycache__/consulta.cpython-38.pyc
 src/controllers/__pycache__/averia.cpython-38.pyc
+xml/abonado
+xml/request_abonado

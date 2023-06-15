@@ -11,4 +11,4 @@ ns_averia = Namespace('Averia', path='/api/1.0/averia', description='Crea y cons
 @ns_averia('/crear')
 class crear(Resource):
     def post():
-        pass
+        return 

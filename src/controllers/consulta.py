@@ -43,25 +43,42 @@ saldoSoap = [
 @ns_consulta.doc(param={'cod': 'codigo de Area', 'tlf':'numero de telefono(producto)'})
 class Saldo(Resource):
 
+    
+    def consultaSaldo(self, codigoArea, telefono):
+
+        wsdl = "http://10.1.189.230:8801/mule/services/PG503obtenerSaldoCuenta?wsdl" #endpoint soap
+        transport = Transport()
+        transport.session.verify=False
+        transport.timeout=1500
+        cliente = Client(wsdl=wsdl, transport=transport)
+        query = {
+            'aplicacion': 'PFL',
+            'codigoArea': codigoArea,
+            'telefono': telefono
+        }
+        result = cliente.service.f2V5_Asc_obtenerSaldoCuenta(query)
+        respuesta = {"producto": str(query['codigoArea'] + result.cuentas.telefono),
+                     "data": {
+                         "Fvencimiento": self.__cleanDate__(result.cuentas.fechaVencimiento),
+                         "saldoA": str(result.cuentas.saldoActual),
+                         "saldoV": str(result.cuentas.saldoVencido),
+                         "Fcorte": self.__cleanDate__(result.cuentas.fechaCorte),
+                         "UltimoPago": str(result.pagos.MONTO_ULTI_PAG),
+                         "UltimaFacturacion": self.__cleanDate__(result.cuentas.fechaUltimaFacturacion),
+                         }
+        }
+        return respuesta
+    
     @ns_consulta.expect(in_telefono, valitade=True)    
     @ns_consulta.marshal_with(out_Saldo)
     def post(self,):
-        """ 
-        
-        Retorna la consulta de saldo de un cliente \
-        de la aplicacion PIC "PFL"\
-        @param = json
-        atributos: 
-            [codigo de area]
-            [numero de telefono]
-        """
         producto = api.payload
         cod = producto['cod']
         tlf = producto['tlf']
         result = self.consultaSaldo(cod, tlf)
         print(result)
 
-        return  200
+        return  result, 200
     
     def __cleanDate__(self, AAAAMMDD):
         AAAAMMDD = str(AAAAMMDD)
@@ -70,33 +87,7 @@ class Saldo(Resource):
 
         return AAAAMMDD
     
-    def consultaSaldo(codigoArea, telefono):
 
-        wsdl = "http://10.1.189.230:8801/mule/services/PG503obtenerSaldoCuenta?wsdl" #endpoint soap
-        transport = Transport()
-        transport.session.verify=False
-        transport.timeout=1500
-        cliente = Client(wsdl=wsdl, transport=transport) #Instancia del objeto de cliente
-        #Request=  cliente.get_type('ns1:F2V5AscObtenerSaldoCuentaRQ') #Extraccion de tipo de dato que lleva como parametro el metodo F2V5AscObtenerSaldoCuenta
-        #Request = Request(aplicacion='PFL', codigoArea=codigoArea, telefono=telefono) #pase de parametro con los que se va a realizar la consulta
-        print(cliente)
-        query = {
-            'aplicacion': 'PFL',
-            'codigoArea': codigoArea,
-            'telefono': telefono
-        }
-        result = cliente.service.f2V5_Asc_obtenerSaldoCuenta(query)
-
-        respuesta = {
-            'producto': query['codigoArea'] + result.telefono,
-            'data': {
-                'Fvencimiento': result.fechaVencimiento,
-                'saldoA': result.saldoActual,
-                'saldoV': result.saldoVencido,
-                'Fcorte': result.fechaCorte,
-            }
-        }
-        #return respuesta, 200
 
     
 
@@ -107,8 +98,59 @@ class Abonado(Resource):
     @ns_consulta.expect(in_telefono, valitade=True)
     @ns_consulta.marshal_with(out_abonado)
     def post(self, ):
-        pass
+        producto = api.payload
+        numeroDeServicio = producto['cod']+producto['tlf']
+        result = self.abonado(numeroDeServicio)
+        return result, 200
 
+
+    def abonado(self, numeroDeServicio):
+        wsdl = 'http://161.196.61.40:8800/mule/services/AP738ConsultaAbonadoActivoNumeroTelefono?wsdl'
+        transport = Transport()
+        transport.session.verify=False
+        transport.timeout=1500
+        cliente = Client(wsdl=wsdl, transport=transport)
+        response = cliente.service.consultaAbonadoActivoNumeroTelefono(in0={
+            'NU_SERVICIO':numeroDeServicio
+        })
+        fullname = response.NOMBRE_CLIENTE.split(' ')
+        #nombre = fullname[2]+" "+fullname[3]
+        #apellido = fullname[0]+" "+fullname[1]
+        result = {
+        "CUENTA_CLIENTE": response.CUENTA_CLIENTE,
+        "cliente": {
+            "CEDULA_RIF": response.CEDULA_RIF,
+            "NOMBRE": fullname,
+            "APELLIDO": "apellido",
+            "DIRECCION_COBRO": response.DIRECCION_COBRO,
+            "ZONA_POSTAL": response.ZONA_POSTAL
+        },
+        "producto": {
+            "IDENTIFICADOR_LLAMADAS": response.IDENTIFICADOR_LLAMADAS,
+            "UNIDAD_NEGOCIOS": response.UNIDAD_NEGOCIOS,
+            "SERVICIO_ABA": response.SERVICIO_ABA,
+            "MODALIDAD_LINEA": response.MODALIDAD_LINEA,
+            "PLAN_TARIFARIO": response.PLAN_TARIFARIO,
+            "TARIFA": response.TARIFA,
+        },
+        "informacion_tecnica": {
+            "CODERROR": response.CODERROR,
+            "DESCERROR": response.DESCERROR,
+            "OPERADOR_LDI": response.OPERADOR_LDI,
+            "OPERADOR_LDN": response.OPERADOR_LDN,
+            "OPERADOR_LOCAL": response.OPERADOR_LOCAL,
+            "CENTRAL": response.CENTRAL,
+            "RUTA_COBRO": response.RUTA_COBRO,
+            "BLOQUEO_SELECTIVO": response.BLOQUEO_SELECTIVO,
+            "BLOQUEO": response.BLOQUEO,
+            "TIPO_LINEA": response.TIPO_LINEA,
+            "INTENER_EQUIPADO": response.INTENER_EQUIPADO,
+            "CONDICION_NUMERO_PRIVADO": response.CONDICION_NUMERO_PRIVADO,
+        }
+        }
+        print(response)
+        return result
+    
 
 @ns_consulta.route('/planes')
 class Planes(Resource):
@@ -116,7 +158,56 @@ class Planes(Resource):
     @ns_consulta.expect(in_telefono, valitade=True)
     @ns_consulta.marshal_with(out_planes)
     def post(self, ):
-        pass
+        producto = api.payload
+        cod = producto['cod']
+        tlf = producto['tlf']
+        result = self.planes(cod, tlf)
+        return result, 200
+        
+
+    def planes(self, cod, ext):
+        wsdl = 'http://10.1.189.230:8801/mule/services/AP724ConsultaPlanesABAdisponibles?wsdl'
+        transport = Transport(cache=SqliteCache())
+        transport.load_timeout = 1500
+        transport.session.verify = False
+        client = Client(wsdl, transport=transport)
+        request = {
+            'cod_area': cod,
+            'telefono': ext,
+            }
+        response = client.service.consultarPlanes(arg0=request)
+
+        
+        result = {
+        "respuestaDelSistema": {
+            "codRespuesta": response.CODIGO_ERROR,
+            "mensaje": response.DESCRIPCION_ERROR
+        },
+        "plan": {
+            "planes": [
+            {
+                "ID_PLAN": "string",
+                "NOMBRE_PLAN": "string",
+                "VELOCIDAD": {
+                "MAXIMA_VELOCIDAD": "string",
+                "VELOCIDAD_ACTUAL": "string"
+                },
+                "ESTADO": "string"
+            }
+            ]
+        },
+        "velocidad": {
+            "ID_PLAN": "string",
+            "NOMBRE_PLAN": "string",
+            "VELOCIDAD": {
+            "MAXIMA_VELOCIDAD": response.MAXIMA_VELOCIDAD,
+            "VELOCIDAD_ACTUAL": response.VELOCIDAD_ACTUAL
+            },
+            "ESTADO": "string"
+        }
+        }
+        print(response)
+        return result
 
 
 

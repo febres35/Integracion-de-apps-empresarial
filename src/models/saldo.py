@@ -5,7 +5,9 @@ child_outSaldo = server.api.model( 'data', {
     'Fvencimiento': fields.String(), 
     'saldoA': fields.String(), 
     'saldoV': fields.String(), 
-    'Fcorte': fields.String()
+    'Fcorte': fields.String(),
+    'UltimoPago': fields.String(),
+    'UltimaFacturacion': fields.String(),
 })
 out_Saldo = server.api.model('Saldo', {
     'producto': fields.String(),

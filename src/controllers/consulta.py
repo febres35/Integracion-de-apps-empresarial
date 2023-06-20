@@ -17,33 +17,22 @@ from src.models.plan import out_planes
 
 ns_consulta = Namespace('Consultas', description='Consultas -> saldo | abonado | planes', path='/api/1.0/consulta')
 
-
-saldoSoap = [
-    {'producto' : '2125516273', 
-     'data':{'Fvencimiento': '20230615',
-      'saldoA': 'Decimal(\'0.0\')',
-      'saldoV': 'Decimal(\'0, 0\')',
-      'Fcorte': '20230605'}
-    },
-    {'producto' : '2544567233',
-     'data':{'Fvencimiento': '20230815',
-      'saldoA': 'Decimal(\'50,0\')',
-      'saldoV': 'Decimal(\'23,0\')',
-      'Fcorte': '20230530',}
-    },
-    {'producto' : '3215151274',
-     'data':{'Fvencimiento': '20230415',
-      'saldoA': 'Decimal(\'0.0\')',
-      'saldoV': 'Decimal(\'0, 0\')',
-      'Fcorte': '20230330',}
-    }
-]
-
 @ns_consulta.route('/saldo')
 @ns_consulta.doc(param={'cod': 'codigo de Area', 'tlf':'numero de telefono(producto)'})
 class Saldo(Resource):
 
-    
+
+    @ns_consulta.expect(in_telefono, valitade=True)    
+    @ns_consulta.marshal_with(out_Saldo)
+    def post(self,):
+        producto = api.payload
+        cod = producto['cod']
+        tlf = producto['tlf']
+        result = self.consultaSaldo(cod, tlf)
+        print(result)
+
+        return  result, 200
+
     def consultaSaldo(self, codigoArea, telefono):
 
         wsdl = "http://10.1.189.230:8801/mule/services/PG503obtenerSaldoCuenta?wsdl" #endpoint soap
@@ -67,18 +56,10 @@ class Saldo(Resource):
                          "UltimaFacturacion": self.__cleanDate__(result.cuentas.fechaUltimaFacturacion),
                          }
         }
+        print(result)
         return respuesta
     
-    @ns_consulta.expect(in_telefono, valitade=True)    
-    @ns_consulta.marshal_with(out_Saldo)
-    def post(self,):
-        producto = api.payload
-        cod = producto['cod']
-        tlf = producto['tlf']
-        result = self.consultaSaldo(cod, tlf)
-        print(result)
 
-        return  result, 200
     
     def __cleanDate__(self, AAAAMMDD):
         AAAAMMDD = str(AAAAMMDD)
@@ -194,8 +175,8 @@ class Planes(Resource):
                 },
                 "ESTADO": "string"
             }
-            ]
-        },
+           ]
+        }, 
         "velocidad": {
             "ID_PLAN": "string",
             "NOMBRE_PLAN": "string",

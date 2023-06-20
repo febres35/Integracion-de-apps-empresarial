@@ -2,7 +2,10 @@ from flask import Flask
 from flask_restx import Resource, Namespace
 from src.server.instance import server
 
-
+from zeep import Client
+from zeep import xsd
+from zeep.cache import SqliteCache
+from zeep.transports import Transport
 
 app = server.app
 api = server.api
@@ -13,9 +16,6 @@ from src.models.abonado import out_abonado
 from src.models.plan import out_planes
 
 ns_consulta = Namespace('Consultas', description='Consultas -> saldo | abonado | planes', path='/api/1.0/consulta')
-#api.add_namespace(ns_consulta)
-
-
 
 
 saldoSoap = [
@@ -43,7 +43,7 @@ saldoSoap = [
 @ns_consulta.doc(param={'cod': 'codigo de Area', 'tlf':'numero de telefono(producto)'})
 class Saldo(Resource):
 
-    @ns_consulta.expect(in_telefono, valitade=True)
+    @ns_consulta.expect(in_telefono, valitade=True)    
     @ns_consulta.marshal_with(out_Saldo)
     def post(self,):
         """ 
@@ -55,18 +55,13 @@ class Saldo(Resource):
             [codigo de area]
             [numero de telefono]
         """
-        producto =api.payload
-        query = producto['cod']+producto['tlf']
-        result = {}
-        for p in saldoSoap:
-            if (p['producto'] == query):
-                result = p
-                break
-        temp = result['data']['Fvencimiento']
-        result['data']['Fvencimiento']= self.__cleanDate__(temp)
-        temp = result['data']['Fcorte'] 
-        result['data']['Fcorte'] = self.__cleanDate__(temp)
-        return result, 200
+        producto = api.payload
+        cod = producto['cod']
+        tlf = producto['tlf']
+        result = self.consultaSaldo(cod, tlf)
+        print(result)
+
+        return  200
     
     def __cleanDate__(self, AAAAMMDD):
         AAAAMMDD = str(AAAAMMDD)
@@ -74,6 +69,35 @@ class Saldo(Resource):
             return f'{AAAAMMDD[0:4]}-{AAAAMMDD[4:6]}-{AAAAMMDD[6:8]}'
 
         return AAAAMMDD
+    
+    def consultaSaldo(codigoArea, telefono):
+
+        wsdl = "http://10.1.189.230:8801/mule/services/PG503obtenerSaldoCuenta?wsdl" #endpoint soap
+        transport = Transport()
+        transport.session.verify=False
+        transport.timeout=1500
+        cliente = Client(wsdl=wsdl, transport=transport) #Instancia del objeto de cliente
+        #Request=  cliente.get_type('ns1:F2V5AscObtenerSaldoCuentaRQ') #Extraccion de tipo de dato que lleva como parametro el metodo F2V5AscObtenerSaldoCuenta
+        #Request = Request(aplicacion='PFL', codigoArea=codigoArea, telefono=telefono) #pase de parametro con los que se va a realizar la consulta
+        print(cliente)
+        query = {
+            'aplicacion': 'PFL',
+            'codigoArea': codigoArea,
+            'telefono': telefono
+        }
+        result = cliente.service.f2V5_Asc_obtenerSaldoCuenta(query)
+
+        respuesta = {
+            'producto': query['codigoArea'] + result.telefono,
+            'data': {
+                'Fvencimiento': result.fechaVencimiento,
+                'saldoA': result.saldoActual,
+                'saldoV': result.saldoVencido,
+                'Fcorte': result.fechaCorte,
+            }
+        }
+        #return respuesta, 200
+
     
 
 

@@ -5,7 +5,6 @@ from src.server.instance import server
 persona = server.api.model('Persona', {
     'CEDULA_RIF': fields.String( description='DI de la persona' ),
     'NOMBRE': fields.String(  description='Nombre de la persona' ),
-    'APELLIDO': fields.String(  description='Apellido de la persona' ),
     'DIRECCION_COBRO' : fields.String(description='Direccion de cobro'),
     'ZONA_POSTAL': fields.String( description='Codigo Postal'),
     

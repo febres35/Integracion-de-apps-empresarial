@@ -15,8 +15,7 @@ velocidad = server.api.model('Velocidad', {
 plan = server.api.model('Plan', {
     'ID_PLAN': fields.String(description='Identificador del plan'),
     'NOMBRE_PLAN': fields.String(description='Nombre del plan'),
-    'VELOCIDAD': fields.Nested(velocidad, description='Velocidad del plan'),
-    'ESTADO': fields.String(description='Estado del plan'),
+    'VELOCIDAD': fields.String(description='Velocidad del plan'),
     })
 
 planes = server.api.model('Planes', {
@@ -26,6 +25,6 @@ planes = server.api.model('Planes', {
 out_planes = server.api.model('PlanYServicio', {
     'respuestaDelSistema': fields.Nested(respuesta),
     'plan': fields.Nested(planes),
-    'velocidad': fields.Nested(plan),
+    'velocidad': fields.Nested(velocidad),
     })
 

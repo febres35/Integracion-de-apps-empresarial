@@ -94,15 +94,11 @@ class Abonado(Resource):
         response = cliente.service.consultaAbonadoActivoNumeroTelefono(in0={
             'NU_SERVICIO':numeroDeServicio
         })
-        fullname = response.NOMBRE_CLIENTE.split(' ')
-        #nombre = fullname[2]+" "+fullname[3]
-        #apellido = fullname[0]+" "+fullname[1]
         result = {
         "CUENTA_CLIENTE": response.CUENTA_CLIENTE,
         "cliente": {
             "CEDULA_RIF": response.CEDULA_RIF,
-            "NOMBRE": fullname,
-            "APELLIDO": "apellido",
+            "NOMBRE": response.NOMBRE_CLIENTE,
             "DIRECCION_COBRO": response.DIRECCION_COBRO,
             "ZONA_POSTAL": response.ZONA_POSTAL
         },
@@ -132,7 +128,6 @@ class Abonado(Resource):
         print(response)
         return result
     
-
 @ns_consulta.route('/planes')
 class Planes(Resource):
 
@@ -157,37 +152,42 @@ class Planes(Resource):
             'telefono': ext,
             }
         response = client.service.consultarPlanes(arg0=request)
-
-        
-        result = {
-        "respuestaDelSistema": {
-            "codRespuesta": response.CODIGO_ERROR,
-            "mensaje": response.DESCRIPCION_ERROR
-        },
-        "plan": {
-            "planes": [
-            {
-                "ID_PLAN": "string",
-                "NOMBRE_PLAN": "string",
-                "VELOCIDAD": {
+        print(response)
+        p = response.PLAN.Planes
+        planes = []
+        for plan in planes:
+            if(plan['CODIGOS_PLANES_DISPONIBLES'] != 'None'):
+                planes.append({
+                "ID_PLAN": plan['CODIGOS_PLANES_DISPONIBLES'],
+                "NOMBRE_PLAN": plan['DESCRIPCION_DE_LOS_PLANES'],
+                "VELOCIDAD": 'string',
                 "MAXIMA_VELOCIDAD": "string",
                 "VELOCIDAD_ACTUAL": "string"
-                },
-                "ESTADO": "string"
-            }
-           ]
-        }, 
-        "velocidad": {
-            "ID_PLAN": "string",
-            "NOMBRE_PLAN": "string",
-            "VELOCIDAD": {
-            "MAXIMA_VELOCIDAD": response.MAXIMA_VELOCIDAD,
-            "VELOCIDAD_ACTUAL": response.VELOCIDAD_ACTUAL
+                }),
+            
+            
+        print(planes)
+        result = {
+            "respuestaDelSistema": {
+                "codRespuesta": response.CODIGO_ERROR,
+                "mensaje": response.DESCRIPCION_ERROR
             },
-            "ESTADO": "string"
+            "plan": {
+                "planes": [
+                {
+                    "ID_PLAN": "string",
+                    "NOMBRE_PLAN": "string",
+                    "VELOCIDAD": 'string',
+                }
+                ]
+            },
+            "velocidad": {
+                "MAXIMA_VELOCIDAD": response.MAXIMA_VELOCIDAD,
+                "VELOCIDAD_ACTUAL": response.VELOCIDAD_ACTUAL
+            }
         }
-        }
-        print(response)
+        
+        
         return result
 
 

@@ -18,13 +18,10 @@ plan = server.api.model('Plan', {
     'VELOCIDAD': fields.String(description='Velocidad del plan'),
     })
 
-planes = server.api.model('Planes', {
-    'planes': fields.List(fields.Nested(plan))
-})
 
-out_planes = server.api.model('PlanYServicio', {
+out_planes = server.api.model('Planes', {
     'respuestaDelSistema': fields.Nested(respuesta),
-    'plan': fields.Nested(planes),
+    'plan': fields.Raw(list(plan)),
     'velocidad': fields.Nested(velocidad),
     })
 

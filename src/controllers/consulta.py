@@ -1,6 +1,7 @@
 from flask import Flask
-from flask_restx import Resource, Namespace
+from flask_restx import Resource, Namespace, marshal
 from src.server.instance import server
+
 
 from zeep import Client
 from zeep import xsd
@@ -155,15 +156,16 @@ class Planes(Resource):
         print(response)
         p = response.PLAN.Planes
         planes = []
-        for plan in planes:
+
+        for plan in p:
             if(plan['CODIGOS_PLANES_DISPONIBLES'] != 'None'):
+                velocidad = str(plan['CODIGOS_PLANES_DISPONIBLES']).split("_")      
                 planes.append({
                 "ID_PLAN": plan['CODIGOS_PLANES_DISPONIBLES'],
                 "NOMBRE_PLAN": plan['DESCRIPCION_DE_LOS_PLANES'],
-                "VELOCIDAD": 'string',
-                "MAXIMA_VELOCIDAD": "string",
-                "VELOCIDAD_ACTUAL": "string"
+                "VELOCIDAD": ''.join(velocidad[2:3]),#volver string la lista.
                 }),
+
             
             
         print(planes)
@@ -173,21 +175,14 @@ class Planes(Resource):
                 "mensaje": response.DESCRIPCION_ERROR
             },
             "plan": {
-                "planes": [
-                {
-                    "ID_PLAN": "string",
-                    "NOMBRE_PLAN": "string",
-                    "VELOCIDAD": 'string',
-                }
-                ]
+                "planes": planes[1:]
             },
             "velocidad": {
                 "MAXIMA_VELOCIDAD": response.MAXIMA_VELOCIDAD,
                 "VELOCIDAD_ACTUAL": response.VELOCIDAD_ACTUAL
             }
         }
-        
-        
+        #5513457
         return result
 
 

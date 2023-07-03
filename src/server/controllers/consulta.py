@@ -65,7 +65,6 @@ class Saldo(Resource):
                 
         except TypeError:
             print( "Numero de producto no existe")
-            return {}
     
 
     
@@ -94,7 +93,6 @@ class Abonado(Resource):
 
 
     def abonado(self, numeroDeServicio):
-        
         wsdl = 'http://161.196.61.40:8800/mule/services/AP738ConsultaAbonadoActivoNumeroTelefono?wsdl'
         transport = Transport()
         transport.session.verify=False

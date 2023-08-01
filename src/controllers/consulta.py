@@ -31,7 +31,7 @@ class Saldo(Resource):
         tlf = producto['tlf']
         result = self.consultaSaldo(cod, tlf)
         print(result)
-
+        
         return  result, 200
 
     def consultaSaldo(self, codigoArea, telefono):

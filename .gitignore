@@ -13,3 +13,8 @@ src/models/__pycache__/plan.cpython-311.pyc
 src/models/__pycache__/saldo.cpython-311.pyc
 src/models/__pycache__/telefono.cpython-311.pyc
 src/server/__pycache__/instance.cpython-311.pyc
+src/models/__pycache__/abonado.cpython-38.pyc
+src/models/__pycache__/plan.cpython-38.pyc
+src/models/__pycache__/saldo.cpython-38.pyc
+__pycache__/main.cpython-38.pyc
+__pycache__/wsgi.cpython-38.pyc

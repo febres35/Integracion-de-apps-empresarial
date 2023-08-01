@@ -1,0 +1,13 @@
+[Unit]
+Descripcion=APP integrador
+
+
+[Service]
+User=llrm
+Group=llrm
+WorkingDirectory=/home/llrm/trabajo/Integracion-de-apps-empresarial
+Environment="PATH=/home/llrm/trabajo/Integracion-de-apps-empresarial/venv/bin"
+ExecStart=/home/llrm/trabajo/Integracion-de-apps-empresarial/venv/bin/gunicorn --workers 1 --bind unix:app.sock -m 007 main:server
+
+[Install]
+WantedBy=multi.user.target
